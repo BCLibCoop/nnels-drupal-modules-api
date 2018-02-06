@@ -1,0 +1,8 @@
+name = NNELS API Layer
+description = Provides access to NNELS resources
+core = 7.x
+
+dependencies[] = restful
+dependencies[] = cals_s3
+
+registry_autoload[] = PSR-4
