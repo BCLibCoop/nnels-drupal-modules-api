@@ -9,7 +9,6 @@ namespace Drupal\nnels_api\Plugin\resource\entity\node\repository_items;
 
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful\Plugin\resource\ResourceNode;
-use Drupal\restful\Plugin\resource\ResourceEntity;
 
 /**
 * Class RepoItems
@@ -123,35 +122,45 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
 
     return $public_fields;
   }
+  /*
+   * hefty helper method - use statically from FileResources later
+   */
+  public static function getFiles($nid) {
 
-  public function getFiles($nid) {
     module_load_include('inc', 'cals_s3', 'cals_s3.NNELSStreamWrapper.class');
     $files = array();
     $loaded = node_load($nid);
     $entities = $loaded->field_file_resource;
+
     foreach ($entities['und'] as $entity) {
       $entity_id = $entity['value'];
       $fc_wrapped = entity_metadata_wrapper('field_collection_item',
         $entity_id);
-      $s3_uri = $fc_wrapped->field_s3_path->value();
+
+      //Check user perm for "download restricted s3 item"
+      //Otherwise they can only view format and general info about it
+
       $stream = new \Drupal\cals_s3\NNELSStreamWrapper;
-      $stream->setUri($s3_uri);
+      $stream->setUri($fc_wrapped->field_s3_path->value());
       $s3_path_signed = $stream->getExternalUrl();
+
       $multi_fields = array(
         'field_performer'
       );
+
       foreach($multi_fields as $field) {
         foreach ($fc_wrapped->$field->getIterator() as $delta =>
                  $wrapped) {
-          $files['narrator'][] = array($delta => $wrapped->value());
+          $files["$entity_id"]['narrator'][] = array($delta => $wrapped->value
+          ());
         }
       }
 
-      $files['id'] = $entity_id;
-      $files['self'] = '/api/v1.0/fileResources/' . $entity['value'];
-      $files['format'] = $fc_wrapped->field_file_format->label();
-      $files['s3_path_signed'] = $s3_path_signed;
+      $files["$entity_id"]['self'] = '/api/v1.0/fileResources/' . $entity['value'];
+      $files["$entity_id"]['format'] = $fc_wrapped->field_file_format->label();
+      $files["$entity_id"]['s3_path_signed'] = $s3_path_signed;
     }
+
     return $files;
   }
 }
