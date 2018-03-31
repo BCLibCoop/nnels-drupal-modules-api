@@ -41,6 +41,8 @@ class Users__1_1 extends Users__1_0 implements ResourceInterface {
     return parent::process();
   }
 
+  //@todo Ensure this cannot be listed by normal API user
+
   /**
    * Replace any instances of 'me' in the $path with the authenticated user's
    * UID.
