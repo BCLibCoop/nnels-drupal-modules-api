@@ -3,6 +3,7 @@ description = Provides access to NNELS resources
 core = 7.x
 
 dependencies[] = restful
+dependencies[] = restful_search_api
 dependencies[] = cals_s3
 
 registry_autoload[] = PSR-4
