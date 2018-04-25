@@ -71,6 +71,10 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
       $public_fields[$label] = array('property' => $field);
     }
 
+    $public_fields['languages'] .= array(
+      'callback' => array( $this, 'cleanOutput' )
+    );
+
     $public_fields['published_date'] = array(
       'property' => 'field_date',
       //'sub_property' => 'field_qualifier_date'
@@ -119,7 +123,6 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
         )
 
     unset($public_fields['published_date'][{$to_unset}]); */
-
     return $public_fields;
   }
   /*
@@ -162,5 +165,10 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
     }
 
     return $files;
+  }
+
+  public static function cleanOutput($public_fields) {
+    #Nullify the huge list of language codes in allowed_values
+ //   $public_fields['languages']['form_element']['allowed_values'] = array();
   }
 }
