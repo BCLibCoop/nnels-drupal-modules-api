@@ -39,6 +39,18 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
    */
   public function publicFields() {
     return array(
+      'uuid_link' => array(
+        'property' => 'uuid',
+        'process_callbacks' => array(
+          array($this, 'buildLinks')
+        )
+      ),
+      'nid_link' => array(
+        'property' => 'nid',
+        'process_callbacks' => array(
+          array($this, 'buildLinks')
+        )
+      ),
       'entity_id' => array(
         'property' => 'search_api_id',
         'process_callbacks' => array(
@@ -54,14 +66,41 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
       'relevance' => array(
         'property' => 'search_api_relevance',
       ),
+      'title' => array(
+        'property' => 'title',
+      ),
+      'author' => array(
+        'property' => 'field_dc_creator',
+      ),
+      //Should look this up in process callback
+//      'formats' => array(
+//        'property' => 'field_file_format',
+//        'sub_property' => 'value',
+//      ),
       'body' => array(
         'property' => 'body',
         'sub_property' => LANGUAGE_NONE . '::0::value',
       ),
-      'title' => array(
-        'property' => 'title',
-      ),
+      'human_readable_path' => array(
+        'property' => 'nid',
+        'process_callbacks' => array(
+          array($this, 'getItemPath')
+        )
+      )
     );
+  }
+
+  public static function buildLinks($id) {
+    $options = array('absolute' => TRUE);
+    #UUID or NID
+    if ( strlen($id) > 30 ) $options['query'] = array('loadByFieldName' =>
+          'uuid');
+    $path = url("api/v1.0/repo_items/" . $id, $options);
+    return $path;
+  }
+
+  public static function getItemPath($nid) {
+    return drupal_lookup_path('alias', "node/" . $nid);
   }
 
 }
