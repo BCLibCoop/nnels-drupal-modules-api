@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * Implements hook_search_api_query_alter().
+ */
+function nnels_api_search_api_query_alter(SearchApiQueryInterface $query) {
+}
+
+/**
+ * Implements hook_search_api_results_alter().
+ */
+function nnels_api_search_api_results_alter(array &$results,
+                                            SearchApiQueryInterface $query) {
+    //$test = $query->options['search_api_facets'];
+
+//  foreach ($results['search_api_facets'] as $facets ) {
+//    foreach ($facets as $instance) {
+//      $values[] = str_replace('"', "", $instance['filter']);
+//      //populate $options for the current $facet
+//      $options = array(
+//        'index id' => 'solr_repository_search',
+//        'value callback' => '_search_api_facetapi_facet_create_label',
+//        'field' => array(
+//          'key' => 'field_file_resource:field_file_format'
+//        ),
+//      );
+//      //$map = _search_api_facetapi_facet_create_label( array $values, array
+//      // $options);
+//    }
+//  }
+}
