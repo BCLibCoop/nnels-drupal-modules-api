@@ -41,20 +41,11 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
   protected function publicFields() {
     $public_fields = parent::publicFields();
 
-
-    //Rename field label
-    //$public_fields['title'] = $public_fields['tochange'];
-
-    //http methods allowed per field
-    $public_fields['id']['methods'] = array('GET');
-
-
-    //expose text field
     $public_fields['abstract'] = array(
       'property' => 'body',
       'sub_property' => 'value',
       'process_callbacks' => array(
-        'strip_tags' //strip html
+        'strip_tags'
         //,'remove newlines' //@todo
       )
     );
@@ -63,16 +54,16 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
       'creators' => 'field_dc_creator',
       'languages' => 'field_iso_language',
       'isbn' => 'field_isbn',
-      //'relation' => 'field_dc_relation',
-      'uuid' => 'uuid'
+      'collections' => 'field_dc_relation',
+      'uuid' => 'uuid',
     );
 
     foreach ($field_keys as $label => $field) {
       $public_fields[$label] = array('property' => $field);
     }
 
-    $public_fields['languages'] .= array(
-      'callback' => array( $this, 'cleanOutput' )
+    $public_fields['collections']['process_callbacks'] = array(
+      array( $this, 'formatRelation')
     );
 
     $public_fields['published_date'] = array(
@@ -80,27 +71,31 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
       //'sub_property' => 'field_qualifier_date'
     );
 
-//    $public_fields['file_resources'] = array(
-//      'property' => 'field_file_resource',
-//      //'class' => '\Drupal\restful\Plugin\resource\Field
-//      //\ResourceFieldCollection',
-//      //'class' => '\Drupal\nnels_api\Plugin\resource\entity\field_collection
-//      //\fileResources\FileResources__1_0',
-//      //'entityType' => 'field_collection_item',
-//      //'wrapperMethod' => 'getIdentifier',
-//      //'wrapperMethodOnEntity' => TRUE,
-//      'resource' => array(
-//        'name' => 'fileResources',
-//        'majorVersion' => 1,
-//        'minorVersion' => 0,
-//      )
-//    );
-
-    $public_fields['file_resources'] = array(
-      'property' => 'nid',
-      'process_callbacks' => array(
-        array($this, 'getFiles'))
+    $public_fields['genre'] = array(
+      'property' => 'field_genre',
+      'wrapper_method' => 'label',
     );
+
+    $public_fields['FILE'] = array(
+      'property' => 'field_file_resource',
+      'class' => '\Drupal\restful\Plugin\resource\Field\ResourceFieldEntityReference',
+      //'class' => '\Drupal\nnels_api\Plugin\resource\entity\field_collection
+      //\fileResources\FileResources__1_0',
+      'entityType' => 'field_collection_item',
+      //'wrapperMethod' => 'getIdentifier',
+      //'wrapperMethodOnEntity' => TRUE,
+      'resource' => array(
+        'name' => 'fileResources',
+        'majorVersion' => '1',
+        'minorVersion' => '0',
+      )
+    );
+
+//    $public_fields['file_resources'] = array(
+//      'property' => 'nid',
+//      'process_callbacks' => array(
+//        array($this, 'getFiles'))
+//    );
 //    $public_fields['file_resources'] = array(
 //      'property' => 'field_file_resource',
 ////      'process_callbacks' => array(
@@ -123,6 +118,7 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
         )
 
     unset($public_fields['published_date'][{$to_unset}]); */
+
     return $public_fields;
   }
   /*
@@ -146,6 +142,7 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
       $stream = new \Drupal\cals_s3\NNELSStreamWrapper;
       $stream->setUri($fc_wrapped->field_s3_path->value());
       $s3_path_signed = $stream->getExternalUrl();
+      $file_size = $stream->get_filesize();
 
       $multi_fields = array(
         'field_performer'
@@ -161,14 +158,26 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
 
       $files["$entity_id"]['self'] = '/api/v1.0/fileResources/' . $entity['value'];
       $files["$entity_id"]['format'] = $fc_wrapped->field_file_format->label();
+      $files["$entity_id"]['filesize'] = (int) $file_size;
       $files["$entity_id"]['s3_path_signed'] = $s3_path_signed;
     }
 
     return $files;
   }
 
-  public static function cleanOutput($public_fields) {
-    #Nullify the huge list of language codes in allowed_values
- //   $public_fields['languages']['form_element']['allowed_values'] = array();
+  public static function formatRelation($field) {
+    $output = array();
+    foreach ($field as $instance) {
+      $entity = entity_metadata_wrapper('field_collection_item', $instance);
+      if ($entity->field_dc_relation_qualifiers->value() == 'IsPartOf') {
+        $term_value = $entity->field_dc_relation_term_value->value();
+        //->value();
+        $output[] = array(
+          'item_id' => $entity->item_id->value(),
+          'collection_term_name' => $term_value
+        );
+      }
+    }
+    return $output;
   }
 }
