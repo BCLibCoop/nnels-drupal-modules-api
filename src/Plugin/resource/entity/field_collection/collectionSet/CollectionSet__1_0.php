@@ -31,7 +31,6 @@ use Drupal\restful\Plugin\resource\ResourceEntity;
  *     },
  *   },
  *   formatter = "json_api",
- *   renderCache = FALSE,
  *   majorVersion = 1,
  *   minorVersion = 0
  * )
