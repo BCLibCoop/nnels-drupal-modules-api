@@ -29,7 +29,8 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *     },
  *   },
  *   majorVersion = 1,
- *   minorVersion = 0
+ *   minorVersion = 0,
+ *   formatter = "json"
  * )
  */
 class Genre__1_0 extends ResourceEntity implements ResourceInterface {
@@ -50,6 +51,30 @@ class Genre__1_0 extends ResourceEntity implements ResourceInterface {
     $public_fields = parent::publicFields();
     unset($public_fields['self']);
 
+    $public_fields['path'] = array(
+      'property' => 'tid',
+      'process_callbacks' => array(
+        array(
+          $this,
+          'getGenre',
+        )
+      )
+    );
+
     return $public_fields;
+  }
+
+  public static function getGenres($tid) {
+    $term = taxonomy_term_load($tid);
+    $options = array('absolute' => TRUE);
+    $version = str_replace('_', '.',explode("__", get_called_class())[1]);
+
+    return array(
+      array(
+      'label' => $term->name,
+      'name' => $term->machine_name,
+      'path' => url("api/v{$version}/genre/" . $term->tid, $options),
+      )
+    );
   }
 }

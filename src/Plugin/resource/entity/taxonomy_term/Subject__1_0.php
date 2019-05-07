@@ -52,4 +52,19 @@ class Subject__1_0 extends ResourceEntity implements ResourceInterface {
 
     return $public_fields;
   }
+
+  public static function getSubjects($tid) {
+    $term = taxonomy_term_load($tid);
+    $options = array('absolute' => TRUE);
+    $version = str_replace('_', '.',explode("__", get_called_class())[1]);
+
+    return array(
+      array(
+      'label' => $term->name,
+      'name' => $term->machine_name,
+      'path' => url("api/v{$version}/subject/" . $term->tid,
+        $options),
+      )
+    );
+  }
 }
