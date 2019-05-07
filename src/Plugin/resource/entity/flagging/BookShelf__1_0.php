@@ -11,6 +11,8 @@ use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
 use Drupal\restful\Plugin\resource\Resource;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
+use Drupal\nnels_api\Plugin\resource\search\node\basic_search
+\BasicSearch__1_1;
 
 /**
  * Class BookShelf
@@ -28,6 +30,8 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *     "bundles": {
  *       "bookshelf"
  *     },
+ *     "idField": "id",
+ *     "idColumn": "flagging_id",
  *   },
  *   formatter = "json_api",
  *   majorVersion = 1,
@@ -50,21 +54,21 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
     unset($public_fields['self']);
     unset($public_fields['label']);
 
-    //$public_fields['id']['methods'] = array('GET');
+    $public_fields['id']['methods'] = array('GET', 'POST');
 
     $public_fields['id'] = array(
       'property' => 'entity_id',
-//      'process_callbacks' => array(
-//        array($this, 'loadFileResource')
-//        ),
-      'resource' => array(
-        'name' => 'RepositoryItems',
-        'majorVersion' => 1,
-        'minorVersion' => 1,
-      )
     );
-//    $fields['bookshelf']['callback'] = array($this,
-//     'filterByUserFlagged');
+
+    $public_fields['repositoryItem'] = array(
+      'property' => 'entity_id',
+      'process_callbacks' => array(
+        array(
+          $this,
+          'loadNodeData',
+        )
+      ),
+    );
 
     return $public_fields;
   }
@@ -76,9 +80,33 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
     return '\Drupal\nnels_api\Plugin\DataProvider\DataProviderUserFlags';
   }
 
+  /**
+   * @param $entity_id
+   * @return array
+   */
+  public function loadNodeData($entity_id) {
+    $wrapped = entity_metadata_wrapper('node', $entity_id);
+    $formats = array();
+
+    foreach ($wrapped->field_file_resource->value() as $index => $instance)
+    {
+      $formats[] = entity_metadata_wrapper('field_collection_item', $instance)
+        ->field_file_format->label();
+    }
+    return array(
+//      'id' => $entity_id,
+      'title' => $wrapped->title_field->value(),
+      'author' => $wrapped->field_dc_creator->value(),
+      'formats' => $formats,
+      'self' => \Drupal\nnels_api\Plugin\resource\search\node\basic_search
+      \BasicSearch__1_1::buildLinks($entity_id),
+    );
+  }
+
+  /**
   public function filterByUserFlagged($i) {
     $flags = flag_get_user_flags('node', NULL, $this->getAccount()->uid);
     if (! empty($flag['bookshelf']) ) return $flags['bookshelf'];
     else return array( 'message' => 'Your bookshelf is currently empty.');
-  }
+  }**/
 }
