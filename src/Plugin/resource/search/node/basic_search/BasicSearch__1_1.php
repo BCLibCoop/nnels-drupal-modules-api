@@ -39,21 +39,6 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
    */
   public function publicFields() {
     return array(
-//      'test' => array(
-//        'property' => 'nid',
-//        'process_callbacks' => array(
-//          array($this, 'buildLinks')
-//        ),
-//        'wrapper_method' => 'label'
-//      ),
-//      'uuid_link' => array(
-//        'property' => 'uuid',
-//        'process_callbacks' => array(
-//          array($this, 'buildLinks')
-//        ),
-//        'wrapper_method' => 'value',
-//        'wrapper_method_on_entity' => TRUE,
-//      ),
       'self' => array(
         'property' => 'nid',
         'process_callbacks' => array(
@@ -76,7 +61,7 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
         'property' => 'field_dc_creator',
         //Remove format
       ),
-      'body' => array(
+      'abstract' => array(
         'property' => 'body',
         'sub_property' => LANGUAGE_NONE . '::0::value',
       ),
@@ -115,10 +100,10 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
     $options = array('absolute' => TRUE);
     $options['query'] = array('loadByFieldName' =>
       'uuid');
-    $uuid_path = url("api/v1.0/repo_items/" . $uuid[$nid], $options);
+    $uuid_path = url("api/v1.1/repo_items/" . $uuid[$nid], $options);
 
     unset($options['query']);
-    $nid_path = url("api/v1.0/repo_items/" . $nid, $options);
+    $nid_path = url("api/v1.1/repo_items/" . $nid, $options);
 
     return array(
       'nid_link' => $nid_path,
