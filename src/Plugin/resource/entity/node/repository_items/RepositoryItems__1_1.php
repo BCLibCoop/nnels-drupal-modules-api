@@ -79,16 +79,27 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
     $public_fields['genre'] = array(
       'property' => 'field_genre',
       'wrapper_method' => 'label',
+      'resource' => array(
+        'name' => 'genre',
+        'majorVersion' => 1,
+        'minorVersion' => 0,
+      ),
+    );
+
+    $public_fields['subject'] = array(
+      'property' => 'field_subject',
+      'wrapper_method' => 'label',
+      'resource' => array(
+        'name' => 'subject',
+        'majorVersion' => 1,
+        'minorVersion' => 0,
+      ),
     );
 
     $public_fields['file'] = array(
       'property' => 'field_file_resource',
       'class' => '\Drupal\restful\Plugin\resource\Field\ResourceFieldEntityReference',
-      //'class' => '\Drupal\nnels_api\Plugin\resource\entity\field_collection
-      //\fileResources\FileResources__1_0',
       'entityType' => 'field_collection_item',
-      //'wrapperMethod' => 'getIdentifier',
-      //'wrapperMethodOnEntity' => TRUE,
       'resource' => array(
         'name' => 'fileResources',
         'majorVersion' => '1',
@@ -96,80 +107,21 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
       )
     );
 
-//    $public_fields['file_resources'] = array(
-//      'property' => 'nid',
-//      'process_callbacks' => array(
-//        array($this, 'getFiles'))
-//    );
-//    $public_fields['file_resources'] = array(
-//      'property' => 'field_file_resource',
-////      'process_callbacks' => array(
-////        $this, 'getFiles'),
-//      //'sub_property' => 'field_s3_path'
-//    );
+    $public_fields['cover_art'] = array(
+      'property' => 'nid',
+      'process_callbacks' => array(array($this, 'getCoverArt'))
+    );
+
 
     unset($public_fields['self']);
-    /*$to_unset = array(
-      'published_date' =>array(
-        'item_id',
-        'revision_id',
-        'field_name',
-        'default_revision',
-        'archived',
-        'uuid',
-        'rdf_mapping',
-        'field_dc_date' => array(
-          'und' => array('format')
-        )
-
-    unset($public_fields['published_date'][{$to_unset}]); */
 
     return $public_fields;
   }
-  /*
-   * hefty helper method - use statically from FileResources later
-   */
-//  public static function getFiles($nid) {
-//
-//    module_load_include('inc', 'cals_s3', 'cals_s3.NNELSStreamWrapper.class');
-//    $files = array();
-//    $loaded = node_load($nid);
-//    $entities = $loaded->field_file_resource;
-//
-//    foreach ($entities['und'] as $entity) {
-//      $entity_id = $entity['value'];
-//      $fc_wrapped = entity_metadata_wrapper('field_collection_item',
-//        $entity_id);
-//
-//      //Check user perm for "download restricted s3 item"
-//      //Otherwise they can only view format and general info about it
-//
-//      $stream = new \Drupal\cals_s3\NNELSStreamWrapper;
-//      $stream->setUri($fc_wrapped->field_s3_path->value());
-//      $s3_path_signed = $stream->getExternalUrl();
-//      $file_size = $stream->get_filesize();
-//
-//      $multi_fields = array(
-//        'field_performer'
-//      );
-//
-//      foreach($multi_fields as $field) {
-//        foreach ($fc_wrapped->$field->getIterator() as $delta =>
-//                 $wrapped) {
-//          $files["$entity_id"]['narrator'][] = array($delta => $wrapped->value
-//          ());
-//        }
-//      }
-//
-//      $files["$entity_id"]['self'] = '/api/v1.0/fileResources/' . $entity['value'];
-//      $files["$entity_id"]['format'] = $fc_wrapped->field_file_format->label();
-//      $files["$entity_id"]['filesize'] = (int) $file_size;
-//      $files["$entity_id"]['s3_path_signed'] = $s3_path_signed;
-//    }
-//
-//    return $files;
-//  }
 
+  /**
+   * @param $field
+   * @return array
+   */
   public static function formatRelation($field) {
     $output = array();
     foreach ($field as $instance) {
@@ -191,6 +143,10 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
     return $output;
   }
 
+  /**
+   * @param $field
+   * @return array
+   */
   public static function formatDCdate($field) {
     $output = array();
 
@@ -203,5 +159,42 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
       );
     }
     return $output;
+  }
+
+  /**
+   * @param $nid
+   * @return array
+   */
+  public static function getCoverArt($nid) {
+    module_load_include('inc', 'nnels_content_cafe', 'nnels_content_cafe');
+    $cover_info =
+      nnels_content_cafe_select_multiple_content_cafe_jacket_rows_by_nids
+      (array($nid));
+
+    $uri = NULL;
+    $covers = array();
+
+    if ($cover_info) {
+      $jacket = array_shift($cover_info[$nid]);
+      $uri = file_load($jacket->fid)->uri;
+
+      module_load_include('inc', 'cals_s3', 'cals_s3.NNELSStreamWrapper.class');
+      $stream = new \Drupal\amazons3\StreamWrapper;
+      $stream->setUri($uri);
+
+      $covers = array(
+        'results' => array(
+          'image_style' => '50x75',
+          'path' => $stream->getExternalUrl()
+        ),
+        'single' => array(
+          'image_style' => '200x300',
+          'path' => $stream->getExternalUrl()
+        ),
+      );
+    }
+    return array(
+      $covers,
+    );
   }
 }

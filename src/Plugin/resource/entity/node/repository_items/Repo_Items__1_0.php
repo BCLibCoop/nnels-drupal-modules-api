@@ -76,7 +76,7 @@ class Repo_Items__1_0 extends ResourceNode implements ResourceInterface {
       'wrapper_method' => 'label',
     );
 
-    $public_fields['FILE'] = array(
+    $public_fields['file'] = array(
       'property' => 'field_file_resource',
       'class' => '\Drupal\restful\Plugin\resource\Field\ResourceFieldEntityReference',
       //'class' => '\Drupal\nnels_api\Plugin\resource\entity\field_collection
