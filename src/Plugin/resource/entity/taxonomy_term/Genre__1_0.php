@@ -56,7 +56,7 @@ class Genre__1_0 extends ResourceEntity implements ResourceInterface {
       'process_callbacks' => array(
         array(
           $this,
-          'getGenre',
+          'getGenres',
         )
       )
     );
