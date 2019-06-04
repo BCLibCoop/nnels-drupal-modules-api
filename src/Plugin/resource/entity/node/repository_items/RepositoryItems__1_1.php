@@ -112,10 +112,23 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
       'process_callbacks' => array(array($this, 'getCoverArt'))
     );
 
+    # @todo the relationship fields suck
 
     unset($public_fields['self']);
 
     return $public_fields;
+  }
+
+  /**
+   * Override queryCount in DataProvider which is wrong for multiple IDs
+   * @param $output
+   * @return mixed
+   */
+  public function additionalHateoas($output) {
+    $data_elements_count = count($output['data']);
+    $output['meta']['count'] = $data_elements_count < $output['meta']['count'] ?
+      $data_elements_count : $output['meta']['count'];
+    return $output;
   }
 
   /**
