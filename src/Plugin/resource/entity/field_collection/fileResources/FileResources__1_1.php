@@ -55,7 +55,7 @@ class FileResources__1_1 extends ResourceEntity {
         array($this, 'formatRunTime')
       )
     );
-    $public_fields['format'] = array(
+    $public_fields['formats'] = array(
       'property' => 'field_file_format',
       'wrapper_method' => 'label',
     );

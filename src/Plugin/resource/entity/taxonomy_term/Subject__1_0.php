@@ -17,7 +17,7 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *
  * @Resource(
  *   name = "subject:1.0",
- *   resource = "subject",
+ *   resource = "subjects",
  *   label = "Subject",
  *   description = "Export the subject taxonomy term.",
  *   authenticationTypes = { "token" },

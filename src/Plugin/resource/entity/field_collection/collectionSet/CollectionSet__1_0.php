@@ -19,7 +19,7 @@ use Drupal\restful\Plugin\resource\ResourceEntity;
  * @Resource(
  *   name = "collectionSet:1.0",
  *   resource = "collections",
- *   label = "collection_set",
+ *   label = "Collection set",
  *   description = "Expose the DC Relation field collection associated with
  *   repository item",
  *   authenticationTypes = TRUE,
