@@ -8,6 +8,7 @@
 namespace Drupal\nnels_api\Plugin\resource\search\node\basic_search;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful_search_api\Plugin\Resource\ResourceSearchBase;
+use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
 
 /**
  * Class BasicSearch__1_1
@@ -38,6 +39,7 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
    * Overrides Resource::publicFields().
    */
   public function publicFields() {
+
     return array(
       'self' => array(
         'property' => 'nid',
@@ -100,10 +102,10 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
     $options = array('absolute' => TRUE);
     $options['query'] = array('loadByFieldName' =>
       'uuid');
-    $uuid_path = url("api/v1.1/repo_items/" . $uuid[$nid], $options);
+    $uuid_path = url("api/v1.1/repositoryItems/" . $uuid[$nid], $options);
 
     unset($options['query']);
-    $nid_path = url("api/v1.1/repo_items/" . $nid, $options);
+    $nid_path = url("api/v1.1/repositoryItems/" . $nid, $options);
 
     return array(
       'nid_link' => $nid_path,
@@ -112,7 +114,7 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
   }
 
   public static function getItemPath($nid) {
-    return drupal_lookup_path('alias', "node/" . $nid);
+    return drupal_lookup_path('alias', 'node/' . $nid);
   }
 
   public static function loadFileResource($entity_ids) {
