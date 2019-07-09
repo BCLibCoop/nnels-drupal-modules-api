@@ -8,6 +8,7 @@
 
 namespace Drupal\nnels_api\Plugin\resource\entity\node\repository_items;
 
+use Drupal\cals_s3\NNELSStreamWrapper;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful\Plugin\resource\ResourceNode;
 
@@ -116,6 +117,13 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
 
     unset($public_fields['self']);
 
+    $public_fields['human_readable_path'] = array(
+      'property' => 'nid',
+      'process_callbacks' => array(
+        array($this, 'getItemPath')
+      )
+    );
+
     return $public_fields;
   }
 
@@ -145,9 +153,9 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
         $term_object = $entity->field_dc_relation_term_value->value(); //object
 
         $output[] = array( //ensure these are instances
-          'item_id' => $entity->item_id->value(),
-          'tid' => $term_object->tid,
-          'vid' => $term_object->vid,
+          //'item_id' => $entity->item_id->value(),
+          'term_id' => $term_object->tid,
+          'vocabulary_id' => $term_object->vid,
           'label' => $term_object->name,
           'name' => $term_object->machine_name
         );
@@ -174,6 +182,10 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
     return $output;
   }
 
+  public static function getItemPath($nid) {
+    return drupal_lookup_path('alias', "node/" . $nid);
+  }
+
   /**
    * @param $nid
    * @return array
@@ -192,7 +204,7 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
       $uri = file_load($jacket->fid)->uri;
 
       module_load_include('inc', 'cals_s3', 'cals_s3.NNELSStreamWrapper.class');
-      $stream = new \Drupal\amazons3\StreamWrapper;
+      $stream = new NNELSStreamWrapper();
       $stream->setUri($uri);
 
       $covers = array(
