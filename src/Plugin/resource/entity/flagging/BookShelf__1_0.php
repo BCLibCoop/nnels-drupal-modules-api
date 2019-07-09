@@ -39,15 +39,16 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  * )
  */
 class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
+
   /**
    * Overrides ResourceEntity::checkEntityAccess().
    *
    * Allow access to create "Bookshelf" resource for privileged users.
    */
-//  protected function checkEntityAccess($op, $entity_type, $entity) {
-//    $account = $this->getAccount();
-//    return user_access('flag bookshelf', $account);
-//  }
+  protected function checkEntityAccess($op, $entity_type, $entity) {
+    $account = $this->getAccount();
+    return user_access('flag bookshelf', $account);
+  }
 
   protected function publicFields() {
     $public_fields = parent::publicFields();
