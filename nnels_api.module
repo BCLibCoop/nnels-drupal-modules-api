@@ -29,6 +29,7 @@
 //    }
 //  }
 // }
+use Drupal\restful\Plugin\FormatterPluginManager;
 
 //Unknown registry bug prevents these plugin definitions from discovery on staging/prod but not local.
 //Below hook adds them back in.
