@@ -1,17 +1,17 @@
 <?php
 
-/**
- * Implements hook_search_api_query_alter().
- */
-function nnels_api_search_api_query_alter(SearchApiQueryInterface $query) {
-}
+// /**
+//  * Implements hook_search_api_query_alter().
+//  */
+// function nnels_api_search_api_query_alter(SearchApiQueryInterface $query) {
+// }
 
-/**
- * Implements hook_search_api_results_alter().
- */
-function nnels_api_search_api_results_alter(array &$results,
-                                            SearchApiQueryInterface $query) {
-    //$test = $query->options['search_api_facets'];
+// /**
+//  * Implements hook_search_api_results_alter().
+//  */
+// function nnels_api_search_api_results_alter(array &$results,
+//                                             SearchApiQueryInterface $query) {
+//     $test = $query->options['search_api_facets'];
 
 //  foreach ($results['search_api_facets'] as $facets ) {
 //    foreach ($facets as $instance) {
@@ -24,8 +24,22 @@ function nnels_api_search_api_results_alter(array &$results,
 //          'key' => 'field_file_resource:field_file_format'
 //        ),
 //      );
-//      //$map = _search_api_facetapi_facet_create_label( array $values, array
-//      // $options);
+//      $map = _search_api_facetapi_facet_create_label( array $values, array
+//      $options);
 //    }
 //  }
+// }
+
+//Unknown registry bug prevents these plugin definitions from discovery on staging/prod but not local.
+//Below hook adds them back in.
+
+function nnels_api_formatter_plugin_alter(&$plugins) {
+    $plugin_manager = FormatterPluginManager::create();
+
+    $lost_defs = array( 'json_api' => array ( 'id' => 'json_api', 'label' => 'JSON API', 'description' => 'Output in using the JSON API format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterJsonApi', 'provider' => 'restful', ), 'hal_json' => array ( 'id' => 'hal_json', 'label' => 'HAL+JSON', 'description' => 'Output in using the HAL conventions and JSON format.', 'curie' => array ( 'name' => 'hal', 'path' => 'doc/rels', 'template' => '/{rel}', ), 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterHalJson', 'provider' => 'restful', ), 'single_json' => array ( 'id' => 'single_json', 'label' => 'Single JSON', 'description' => 'Output a single item using the JSON format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterSingleJson', 'provider' => 'restful', ), 'json' => array ( 'id' => 'json', 'label' => 'Simple JSON', 'description' => 'Output in using the JSON format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterJson', 'provider' => 'restful', ) );
+
+    foreach ($lost_defs as $base_def) {
+        $plugin_manager->processDefinition($base_def);
+        $plugins[$base_def['id']] = $base_def;
+    }
 }
