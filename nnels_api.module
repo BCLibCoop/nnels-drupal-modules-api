@@ -1,40 +1,14 @@
 <?php
 
-// /**
-//  * Implements hook_search_api_query_alter().
-//  */
-// function nnels_api_search_api_query_alter(SearchApiQueryInterface $query) {
-// }
-
-// /**
-//  * Implements hook_search_api_results_alter().
-//  */
-// function nnels_api_search_api_results_alter(array &$results,
-//                                             SearchApiQueryInterface $query) {
-//     $test = $query->options['search_api_facets'];
-
-//  foreach ($results['search_api_facets'] as $facets ) {
-//    foreach ($facets as $instance) {
-//      $values[] = str_replace('"', "", $instance['filter']);
-//      //populate $options for the current $facet
-//      $options = array(
-//        'index id' => 'solr_repository_search',
-//        'value callback' => '_search_api_facetapi_facet_create_label',
-//        'field' => array(
-//          'key' => 'field_file_resource:field_file_format'
-//        ),
-//      );
-//      $map = _search_api_facetapi_facet_create_label( array $values, array
-//      $options);
-//    }
-//  }
-// }
 use Drupal\restful\Plugin\FormatterPluginManager;
+use Drupal\restful\Plugin\resource\ResourceInterface;
+use Drupal\restful\Authentication\AuthenticationManager;
 
 //Unknown registry bug prevents these plugin definitions from discovery on staging/prod but not local.
 //Below hook adds them back in.
 
 function nnels_api_formatter_plugin_alter(&$plugins) {
+
     $plugin_manager = FormatterPluginManager::create();
 
     $lost_defs = array( 'json_api' => array ( 'id' => 'json_api', 'label' => 'JSON API', 'description' => 'Output in using the JSON API format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterJsonApi', 'provider' => 'restful', ), 'hal_json' => array ( 'id' => 'hal_json', 'label' => 'HAL+JSON', 'description' => 'Output in using the HAL conventions and JSON format.', 'curie' => array ( 'name' => 'hal', 'path' => 'doc/rels', 'template' => '/{rel}', ), 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterHalJson', 'provider' => 'restful', ), 'single_json' => array ( 'id' => 'single_json', 'label' => 'Single JSON', 'description' => 'Output a single item using the JSON format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterSingleJson', 'provider' => 'restful', ), 'json' => array ( 'id' => 'json', 'label' => 'Simple JSON', 'description' => 'Output in using the JSON format.', 'class' => 'Drupal\\restful\\Plugin\\formatter\\FormatterJson', 'provider' => 'restful', ) );
@@ -43,4 +17,40 @@ function nnels_api_formatter_plugin_alter(&$plugins) {
         $plugin_manager->processDefinition($base_def);
         $plugins[$base_def['id']] = $base_def;
     }
+}
+
+/**
+ * Implements hook_restful_authentication_plugin_alter()
+ * @param $plugins
+ */
+function nnels_api_authentication_plugin_alter(&$plugins) {
+
+  $lost_defs = array (
+    'token' =>
+      array (
+        'label' => 'Token based authentication',
+        'description' => 'Authenticate requests based on the token sent in the request.',
+        'settings' => array (),
+        'id' => 'token',
+        'options' =>
+          array (
+            'paramName' => 'access_token',
+          ),
+        'class' => 'Drupal\\restful_token_auth\\Plugin\\authentication\\TokenAuthentication',
+        'provider' => 'restful_token_auth',
+      ),
+    'basic_auth' =>
+      array (
+        'label' => 'Basic authentication',
+        'description' => 'Authenticate requests based on basic auth.',
+        'settings' =>
+          array (
+          ),
+        'id' => 'basic_auth',
+        'class' => 'Drupal\\restful\\Plugin\\authentication\\BasicAuthentication',
+        'provider' => 'restful',
+      )
+      );
+
+      $plugins = $plugins + $lost_defs;
 }
