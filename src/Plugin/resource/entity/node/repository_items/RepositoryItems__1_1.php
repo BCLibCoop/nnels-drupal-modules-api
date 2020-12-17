@@ -133,10 +133,13 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
    * @return mixed
    */
   public function additionalHateoas($output) {
-    $data_elements_count = count($output['data']);
-    $output['meta']['count'] = $data_elements_count < $output['meta']['count'] ?
-      $data_elements_count : $output['meta']['count'];
-    return $output;
+    if (isset($output['meta'])) {
+      $data_elements_count = count($output['data']);
+      $output['meta']['count'] = $data_elements_count < $output['meta']['count'] ?
+        $data_elements_count : $output['meta']['count'];
+
+      return $output;
+    }
   }
 
   /**
