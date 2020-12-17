@@ -66,7 +66,7 @@ class RepositoryItems__1_2 extends RepositoryItems__1_1 {
       //Only Availability == Produced (1) files should be attached.
       if ($entity->field_availability_status->value() == 1) {
 
-        $output = array(
+        $output[] = array(
           'type' => 'fileResources',
           'format_long' => $entity->field_file_format->label(),
           'format_short' => str_replace(' ', '', strtolower($entity->field_file_format->label())),
