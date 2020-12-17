@@ -89,6 +89,9 @@ class BasicSearch__1_2 extends BasicSearch__1_1 {
         ),
       );
 
+    $public_fields['path_alias'] = $public_fields['human_readable_path'];
+    unset($public_fields['human_readable_path']);
+
     return $public_fields;
   }
 
