@@ -45,12 +45,35 @@ class RepositoryItems__1_2 extends RepositoryItems__1_1 {
     $public_fields['path_alias'] = $public_fields['human_readable_path'];
     unset($public_fields['human_readable_path']);
 
-    //@todo
+    $public_fields['file_resource_hint'] = array(
+      'property' => 'field_file_resource',
+      'process_callbacks' => array(array($this, 'populateFC')),
+    );
 
     return $public_fields;
   }
 
   protected function dataProviderClassName() {
     return '\Drupal\nnels_api\Plugin\DataProvider\DataProviderNodeExtra';
+  }
+
+  public function populateFC($fieldCollections) {
+    $output = array();
+
+    foreach ($fieldCollections as $instance) {
+      $entity = entity_metadata_wrapper('field_collection_item', $instance);
+      //@todo handle this in dataProvider for FileResources
+      //Only Availability == Produced (1) files should be attached.
+      if ($entity->field_availability_status->value() == 1) {
+
+        $output = array(
+          'type' => 'fileResources',
+          'format_long' => $entity->field_file_format->label(),
+          'format_short' => str_replace(' ', '', strtolower($entity->field_file_format->label())),
+          'id' => $entity->item_id->value(),
+        );
+      }
+    }
+    return $output;
   }
 }
