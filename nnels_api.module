@@ -36,7 +36,7 @@ function nnels_api_authentication_plugin_alter(&$plugins) {
           array (
             'paramName' => 'access_token',
           ),
-        'class' => 'Drupal\\restful_token_auth\\Plugin\\authentication\\TokenAuthentication',
+        'class' => 'Drupal\restful_token_auth\Plugin\authentication\TokenAuthentication',
         'provider' => 'restful_token_auth',
       ),
     'basic_auth' =>
@@ -47,7 +47,7 @@ function nnels_api_authentication_plugin_alter(&$plugins) {
           array (
           ),
         'id' => 'basic_auth',
-        'class' => 'Drupal\\restful\\Plugin\\authentication\\BasicAuthentication',
+        'class' => 'Drupal\restful\Plugin\authentication\BasicAuthentication',
         'provider' => 'restful',
       )
       );
