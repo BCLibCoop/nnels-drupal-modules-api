@@ -137,9 +137,8 @@ class RepositoryItems__1_1 extends Repo_Items__1_0 {
       $data_elements_count = count($output['data']);
       $output['meta']['count'] = $data_elements_count < $output['meta']['count'] ?
         $data_elements_count : $output['meta']['count'];
-
-      return $output;
     }
+    return $output;
   }
 
   /**
