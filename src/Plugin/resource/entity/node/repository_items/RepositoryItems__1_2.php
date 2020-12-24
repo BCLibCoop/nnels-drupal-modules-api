@@ -50,6 +50,10 @@ class RepositoryItems__1_2 extends RepositoryItems__1_1 {
       'process_callbacks' => array(array($this, 'populateFC')),
     );
 
+    $public_fields['original_publisher'] = array(
+      'property' => 'field_publisher_source',
+    );
+
     return $public_fields;
   }
 
