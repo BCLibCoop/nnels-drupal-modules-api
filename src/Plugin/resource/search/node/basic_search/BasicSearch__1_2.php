@@ -33,7 +33,7 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  *   authenticationOptional = TRUE,
  *   majorVersion = 1,
  *   minorVersion = 2,
- *   formatter = "json"
+ *   formatter = "json_api_custom"
  * )
  */
 class BasicSearch__1_2 extends BasicSearch__1_1 {
