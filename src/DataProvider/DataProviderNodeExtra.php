@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains \Drupal\nnels_api\Plugin\DataProvider\DataProviderUserFlags
+ * Contains \Drupal\nnels_api\Plugin\DataProvider\DataProviderNodeExtra
  */
 
 namespace Drupal\nnels_api\Plugin\DataProvider;
