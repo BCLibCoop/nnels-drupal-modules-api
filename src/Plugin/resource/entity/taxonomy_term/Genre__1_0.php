@@ -10,6 +10,7 @@ use Drupal\restful\Plugin\resource\DataInterpreter\DataInterpreterInterface;
 use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
+use EntityFieldQuery;
 
 /**
  * Class Genre
@@ -61,10 +62,20 @@ class Genre__1_0 extends ResourceEntity implements ResourceInterface {
       )
     );
 
+    $public_fields['items'] = array(
+      'property' => 'tid',
+      'process_callbacks' => array(
+        array(
+          $this,
+          'getItemsWithTerm',
+        )
+      )
+    );
+
     return $public_fields;
   }
 
-  public static function getGenres($tid) {
+  public static function getGenres($tid): array {
     $term = taxonomy_term_load($tid);
     $options = array('absolute' => TRUE);
     $version = str_replace('_', '.',explode("__", get_called_class())[1]);
@@ -76,5 +87,21 @@ class Genre__1_0 extends ResourceEntity implements ResourceInterface {
       'path' => url("api/v{$version}/genre/" . $term->tid, $options),
       )
     );
+  }
+
+  public static function getItemsWithTerm($tid): array {
+    $query = new EntityFieldQuery();
+    $out = array();
+    $results = $query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', array('repository_item'))
+      ->fieldCondition('field_genre', 'tid', $tid, '=')
+      ->execute();
+    //->getResourceManager()
+    foreach(array_keys($results['node']) as $nid) {
+//      $out[]['items'] = url("api/v1.2/repositoryItems/" .
+//        $nid, array('absolute' => TRUE));
+      $out[] = array('nid' => json_encode($nid));
+    }
+    return $out;
   }
 }
