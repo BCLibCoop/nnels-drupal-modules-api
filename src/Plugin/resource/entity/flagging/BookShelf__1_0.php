@@ -31,19 +31,22 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  *       "bookshelf"
  *     },
  *     "idField": "id",
- *     "idColumn": "flagging_id",
  *   },
  *   formatter = "json_api",
  *   majorVersion = 1,
  *   minorVersion = 0,
  * )
  */
+
 class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
 
   /**
-   * Overrides ResourceEntity::checkEntityAccess().
-   *
+    * Overrides ResourceEntity::checkEntityAccess().
    * Allow access to create "Bookshelf" resource for privileged users.
+   * @param $op
+   * @param $entity_type
+   * @param $entity
+   * @return bool
    */
   protected function checkEntityAccess($op, $entity_type, $entity) {
     $account = $this->getAccount();
@@ -58,7 +61,7 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
     $public_fields['id']['methods'] = array('GET', 'POST');
 
     $public_fields['id'] = array(
-      'property' => 'entity_id',
+      'property' => 'flagging_id',
     );
 
     $public_fields['repositoryItem'] = array(
@@ -104,10 +107,9 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
     );
   }
 
-  /**
   public function filterByUserFlagged($i) {
     $flags = flag_get_user_flags('node', NULL, $this->getAccount()->uid);
     if (! empty($flag['bookshelf']) ) return $flags['bookshelf'];
     else return array( 'message' => 'Your bookshelf is currently empty.');
-  }**/
+  }
 }
