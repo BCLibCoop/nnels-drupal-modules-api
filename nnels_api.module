@@ -69,6 +69,22 @@ function nnels_api_hook_node_access($node, $op, $account) {
 }
 
 /**
+ * @param $resource_name
+ * @return mixed
+ */
+function getHighestResourceMinorVersion($resource_name): float {
+  $plugins = restful()->getResourceManager()->getPlugins();
+  $register = [];
+  foreach ($plugins->getInstanceIds() as $instance => $id) {
+    $id_string = explode(':', $id);
+    if (strtolower($id_string[0]) == strtolower($resource_name)) {
+      $register[] = (float) $id_string[1]; //1.0, 1.1, 1.2
+    }
+  } //end foreach
+  return max($register) ?: 1.0; //return version or default guarantee
+}
+
+/**
  * Implements hook_entity_property_info().
  */
 function flag_entity_property_info(): array {

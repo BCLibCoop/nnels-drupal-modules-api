@@ -98,14 +98,16 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
   }
 
   public static function buildLinks($nid) {
+    //@todo move this to a generic helper class eventually
     $uuid = entity_get_uuid_by_id('node', array($nid) );
     $options = array('absolute' => TRUE);
     $options['query'] = array('loadByFieldName' =>
       'uuid');
-    $uuid_path = url("api/v1.1/repositoryItems/" . $uuid[$nid], $options);
+    $version = getHighestResourceMinorVersion('repositoryItems');
+    $uuid_path = url("api/v{$version}/repositoryItems/" . $uuid[$nid], $options);
 
     unset($options['query']);
-    $nid_path = url("api/v1.1/repositoryItems/" . $nid, $options);
+    $nid_path = url("api/v{$version}/repositoryItems/" . $nid, $options);
 
     return array(
       'nid_link' => $nid_path,
