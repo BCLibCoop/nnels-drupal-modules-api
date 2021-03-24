@@ -97,8 +97,8 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
     $included = array();
     $output = array('data' => $this->renormalize($extracted, $included));
     if ( $this->resource->getEntityType() == 'flagging' ) {
-        foreach($output[$data] as $instance) {
-          $instance['type'] .= "_item";
+        foreach($output['data'] as $key => $value) {
+          $output['data'][$key]['type'] .= "_item";
         }
     }
 

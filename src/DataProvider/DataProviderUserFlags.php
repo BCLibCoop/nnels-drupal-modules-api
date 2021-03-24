@@ -55,11 +55,7 @@ class DataProviderUserFlags extends DataProviderEntity {
         $response->send();
         return;
       }
-      else {
-        $wrapper = entity_metadata_wrapper($this->entityType, $flagging);
-      }
-    }
-
+    } else $wrapper = entity_metadata_wrapper($this->entityType, $flagging);
 
     // The access calls use the request method. Fake the view to be a GET.
     $old_request = $this->getRequest();
@@ -67,12 +63,27 @@ class DataProviderUserFlags extends DataProviderEntity {
     $output = array($this->view($wrapper->getIdentifier()));
     // Put the original request back to a POST.
     $this->request = $old_request;
-
+    //@todo copy access token?
     return $output;
   }
 
   public function remove($identifier) {
-    parent::remove($identifier);
+    $this->isValidEntity('delete', $identifier);
+    $flagging = flagging_load($identifier);
+    if ($test = flag_get_flag('bookshelf')->flag('unflag',
+      $flagging->entity_id)) {
+      // Set the HTTP headers.
+      //$this->setHttpHeader('Status', 204);
+      $flags = flag_get_user_flags('node', NULL, $this->getAccount()->uid);
+      $fids = [];
+      foreach($flags['bookshelf'] as $flagging) {
+        $fids[] = $flagging->flagging_id;
+      }
+      $response = restful()->getResponse();
+      $response->setStatusCode(204);
+      $response->send();
+      return;
+    }
   }
 
   /**

@@ -45,7 +45,7 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
     unset($public_fields['self']);
     unset($public_fields['label']);
 
-    $public_fields['id']['methods'] = array('GET', 'POST');
+    $public_fields['id']['methods'] = array('GET', 'POST', 'PATCH', 'OPTIONS');
 
     $public_fields['id'] = array(
       'property' => 'flagging_id',
