@@ -7,7 +7,12 @@
 
 namespace Drupal\nnels_api\Plugin\formatter;
 
+use Drupal\restful\Exception\BadRequestException;
 use Drupal\restful\Plugin\formatter\FormatterJsonApi;
+use Drupal\restful\Plugin\resource\DataInterpreter\DataInterpreterInterface;
+use Drupal\restful\Plugin\resource\Field\ResourceFieldBase;
+use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
+use Drupal\restful\Plugin\resource\Field\ResourceFieldResourceInterface;
 
 /**
  * Class FormatterJsonApiCustom
@@ -78,6 +83,54 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
       $external = ['page', 'range'];
       $data["links"]["self"] = str_replace($internal, $external, $self_link);
     }
+  }
+
+  public function prepare(array $data) {
+    // If we're returning an error then set the content type to
+    // 'application/problem+json; charset=utf-8'.
+    if (!empty($data['status']) && floor($data['status'] / 100) != 2) {
+      $this->contentType = 'application/problem+json; charset=utf-8';
+      return $data;
+    }
+
+    $extracted = $this->extractFieldValues($data);
+    $included = array();
+    $output = array('data' => $this->renormalize($extracted, $included));
+    if ( $this->resource->getEntityType() == 'flagging' ) {
+        foreach($output[$data] as $instance) {
+          $instance['type'] .= "_item";
+        }
+    }
+
+    $output = $this->populateIncludes($output, $included);
+
+    if ($resource = $this->getResource()) {
+      $request = $resource->getRequest();
+      $data_provider = $resource->getDataProvider();
+      $is_list_request = $request->isListRequest($resource->getPath());
+      if ($is_list_request) {
+        // Get the total number of items for the current request without
+        // pagination.
+        $output['meta']['count'] = $data_provider->count();
+        // If there are items that were taken out during access checks,
+        // report them as denied in the metadata.
+        if (variable_get('restful_show_access_denied', FALSE) && ($inaccessible_records = $data_provider->getMetadata()->get('inaccessible_records'))) {
+          $output['meta']['denied'] = empty($output['meta']['denied']) ? $inaccessible_records : $output['meta']['denied'] + $inaccessible_records;
+        }
+      }
+      else {
+        // For non-list requests do not return an array of one item.
+        $output['data'] = reset($output['data']);
+      }
+      if (method_exists($resource, 'additionalHateoas')) {
+        $output = array_merge($output, $resource->additionalHateoas($output));
+      }
+
+      // Add HATEOAS to the output.
+      $this->addHateoas($output);
+    }
+
+    return $output;
   }
 
 }

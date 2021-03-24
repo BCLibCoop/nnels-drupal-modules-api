@@ -63,6 +63,7 @@ function nnels_api_authentication_plugin_alter(&$plugins) {
  */
 function nnels_api_hook_node_access($node, $op, $account) {
   //drupal_static_reset('node_access'); to clear cache
+  //@todo MUST REMOVE - only for testing!!
   $t = 0;
   $user_obj = user_load($account->uid);
   return NODE_ACCESS_IGNORE;
