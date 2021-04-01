@@ -83,7 +83,7 @@ class Genre__1_0 extends ResourceEntity implements ResourceInterface {
     return array(
       array(
       'label' => $term->name,
-      'name' => $term->machine_name,
+      'tid' => $term->tid,
       'path' => url("api/v{$version}/genre/" . $term->tid, $options),
       )
     );
