@@ -11,8 +11,7 @@ use Drupal\nnels_api\Plugin\resource\entity\taxonomy_term\Subject__1_0;
 use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful_search_api\Plugin\Resource\ResourceSearchBase;
-use Drupal\nnels_api\Plugin\resource\search\node\basic_search
-\BasicSearch__1_1;
+use Drupal\nnels_api\Plugin\resource\search\node\basic_search\BasicSearch__1_1;
 
 /**
  * Class BasicSearch__1_2
@@ -108,13 +107,17 @@ class BasicSearch__1_2 extends BasicSearch__1_1 {
   }
 
   public function getGenres($tid) {
+    $data = Genre__1_0::taxonomyNameData($tid);
+    $data['path_only'] = FALSE;
     return Genre__1_0
-      ::getGenres($tid);
+      ::getTermResourcePath($data);
   }
 
   public function getSubjects($tid) {
+    $data = Subject__1_0::taxonomyNameData($tid);
+    $data['path_only'] = FALSE;
     return Subject__1_0
-      ::getSubjects($tid);
+      ::getTermResourcePath($data);
   }
 
   public function getEntityType() {

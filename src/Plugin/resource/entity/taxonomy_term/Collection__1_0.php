@@ -1,10 +1,12 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\nnels_api\Plugin\resource\entity\taxonomy_term\Collection__1_0
+ */
 
 namespace Drupal\nnels_api\Plugin\resource\entity\taxonomy_term;
 
-use Drupal\restful\Plugin\resource\DataInterpreter\DataInterpreterInterface;
-use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
-use Drupal\restful\Plugin\resource\ResourceEntity;
+use Drupal\nnels_api\TaxonomyResource;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 
 /**
@@ -29,49 +31,36 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *   formatter = "json"
  * )
  */
-class Collection__1_0 extends ResourceEntity implements ResourceInterface {
-  /**
-   * Overrides ResourceEntity::checkEntityAccess().
-   *
-   * Allow access to create "Collection" resource for privileged users, as
-   * we can't use entity_access() since entity_metadata_taxonomy_access()
-   * denies it for a non-admin user.
-   */
-  protected function checkEntityAccess($op, $entity_type, $entity) {
-    $account = $this->getAccount();
+class Collection__1_0 extends TaxonomyResource implements ResourceInterface {
 
-    return user_access('view published content ', $account);
-  }
-
-  protected function publicFields() {
+  protected function publicFields(): array {
     $public_fields = parent::publicFields();
     unset($public_fields['self']);
 
     $public_fields['path'] = array(
       'property' => 'tid',
       'process_callbacks' => array(
-        array(
-          $this,
-          'getRelations',
-        )
+        array($this, 'taxonomyNameData'),
+        array($this, 'getTermResourcePath'),
+      )
+    );
+
+    $public_fields['items'] = array(
+      'property' => 'tid',
+      'process_callbacks' => array(
+        array($this, 'taxonomyFieldData'),
+        array($this, 'getItemsWithTerm'),
       )
     );
 
     return $public_fields;
   }
 
-  public static function getRelations($tid) {
-    $term = taxonomy_term_load($tid);
-    $options = array('absolute' => TRUE);
-    $version = str_replace('_', '.',explode("__", get_called_class())[1]);
-
-    return array(
-      array(
-        'label' => $term->name,
-        'tid' => $term->tid,
-        'path' => url("api/v{$version}/relation/" . $term->tid, $options),
-      )
-    );
+  public function taxonomyNameData($tid): array {
+    return array('id' =>  $tid, 'name' => 'collection', 'path_only' => TRUE);
   }
 
+  public function taxonomyFieldData($tid): array {
+    return array('id' => $tid, 'field' => 'field_dc_relation');
+  }
 }
