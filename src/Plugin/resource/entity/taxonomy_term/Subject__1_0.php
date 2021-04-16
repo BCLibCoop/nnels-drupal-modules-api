@@ -28,7 +28,7 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *   },
  *   majorVersion = 1,
  *   minorVersion = 0,
- *   formatter = "json"
+ *   formatter = "json_api_custom"
  * )
  */
 class Subject__1_0 extends TaxonomyResource implements ResourceInterface {
