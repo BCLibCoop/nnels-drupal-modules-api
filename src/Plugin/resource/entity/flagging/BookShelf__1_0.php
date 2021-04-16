@@ -11,6 +11,7 @@ use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
 use Drupal\restful\Plugin\resource\Resource;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
+use Drupal\nnels_api\LocatorUtility;
 use Drupal\nnels_api\Plugin\resource\search\node\basic_search
 \BasicSearch__1_1;
 
@@ -88,8 +89,7 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
       'title' => $wrapped->title_field->value(),
       'author' => $wrapped->field_dc_creator->value(),
       'formats' => $formats,
-      'self' => \Drupal\nnels_api\Plugin\resource\search\node\basic_search
-      \BasicSearch__1_1::buildLinks($entity_id),
+      'self' => LocatorUtility::buildLinks($entity_id),
     );
   }
 
