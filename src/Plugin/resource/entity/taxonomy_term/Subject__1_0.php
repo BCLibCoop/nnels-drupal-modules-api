@@ -56,6 +56,14 @@ class Subject__1_0 extends TaxonomyResource implements ResourceInterface {
     return $public_fields;
   }
 
+  /**
+   * Loads our DataProvider with custom overrides.
+   * @return string
+   */
+  protected function dataProviderClassName(): string {
+    return '\Drupal\nnels_api\Plugin\DataProvider\DataProviderTaxTerm';
+  }
+
   public static function taxonomyNameData($tid): array {
     return array('id' =>  $tid, 'name' => 'subject', 'path_only' => TRUE);
   }
