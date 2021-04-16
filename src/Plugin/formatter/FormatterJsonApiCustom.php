@@ -55,7 +55,7 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
 
     if ($page > 1) {
       $query = $input;
-      $query['page']['number'] = $page - 1;
+      $query['page'] = $page - 1;
       $data['previous'] = array(
         'title' => 'Previous',
         'href' => $resource->versionedUrl('', array('query' => $query), TRUE),
@@ -69,7 +69,7 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
     $previous_items = ($page - 1) * $items_per_page;
     if (isset($data['count']) && $data['count'] > count($data['data']) + $previous_items) {
       $query = $input;
-      $query['page']['number'] = $page + 1;
+      $query['page'] = $page + 1;
       $data['next'] = array(
         'title' => 'Next',
         'href' => $resource->versionedUrl('', array('query' => $query), TRUE),
