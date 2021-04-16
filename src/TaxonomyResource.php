@@ -73,16 +73,20 @@ class TaxonomyResource extends ResourceEntity implements ResourceInterface {
 
       if ($resources = $entity->field_file_resource->value()) {
         $resource_metadata = RepositoryItems__1_2::populateFC($resources);
+        foreach($resource_metadata as $delta => $resource) {
+          if ( isset( $resource['format_short'] ) )
+            $resource_metadata[$delta] = $resource['format_short'];
+        }
       }
 
-      $out[] = array(
+      $out[] = [
         'nid' => $nid,
         'title' => $entity->title->value(),
         'author' => $entity->field_dc_creator->value(),
         'cover_art' => RepositoryItems__1_1::getCoverArt($nid),
-        'file_resource_hint' => $resource_metadata,
+        'format_short' => $resource_metadata,
         'self' => $links
-      );
+      ];
     }
     return $out;
   }
