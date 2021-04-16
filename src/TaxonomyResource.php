@@ -3,6 +3,8 @@
 
 namespace Drupal\nnels_api;
 
+use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
+use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_2;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use EntityFieldQuery;
@@ -64,12 +66,21 @@ class TaxonomyResource extends ResourceEntity implements ResourceInterface {
       ->execute();
 
     foreach(array_keys($results['node']) as $instance => $nid) {
+
       $links = LocatorUtility::buildLinks($nid);
       $entity = entity_metadata_wrapper('node', $nid);
+      $resource_metadata = [];
+
+      if ($resources = $entity->field_file_resource->value()) {
+        $resource_metadata = RepositoryItems__1_2::populateFC($resources);
+      }
+
       $out[] = array(
         'nid' => $nid,
         'title' => $entity->title->value(),
         'author' => $entity->field_dc_creator->value(),
+        'cover_art' => RepositoryItems__1_1::getCoverArt($nid),
+        'file_resource_hint' => $resource_metadata,
         'self' => $links
       );
     }
