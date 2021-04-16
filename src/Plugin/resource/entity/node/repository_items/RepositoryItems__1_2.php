@@ -3,7 +3,7 @@
 /**
 * @file
 * Contains \Drupal\nnels_api\Plugin\resource\entity\node\repository_items
- * \RepositoryItems__1_1
+ * \RepositoryItems__1_2
 */
 
 namespace Drupal\nnels_api\Plugin\resource\entity\node\repository_items;
@@ -61,13 +61,22 @@ class RepositoryItems__1_2 extends RepositoryItems__1_1 {
     return '\Drupal\nnels_api\Plugin\DataProvider\DataProviderNodeExtra';
   }
 
-  public function populateFC($fieldCollections) {
+  /**
+   * @param $fieldCollections
+   * @return array
+   * @throws \EntityMetadataWrapperException
+   */
+  public static function populateFC($fieldCollections): array {
     $output = array();
-
+    //$fieldCollections is an array of FieldCollectionItemEntity instances
+    // not Entity API compatible wrapped entities.
     foreach ($fieldCollections as $instance) {
-      $entity = entity_metadata_wrapper('field_collection_item', $instance);
+      //EMW as needed
+      if ( is_a($instance, 'FieldCollectionItemEntity') ) {
+        $entity = entity_metadata_wrapper('field_collection_item', $instance);
+      }
       //@todo handle this in dataProvider for FileResources
-      //Only Availability == Produced (1) files should be attached.
+      //IMPORTANT: Only Availability == Produced (1) files should be attached.
       if ($entity->field_availability_status->value() == 1) {
 
         $output[] = array(
