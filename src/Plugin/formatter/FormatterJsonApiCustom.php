@@ -43,9 +43,10 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
    *   The resource to use.
    * @param string $path
    *   The resource path.
+   * @throws \Drupal\restful\Exception\ServerConfigurationException
    */
   protected function addHateoas(array &$data, ResourceInterface $resource = NULL, $path = NULL) {
-   parent::addHateoas($data, $resource, $path);
+   //parent::addHateoas($data, $resource, $path);
 
    //modify paged links to use same keys as query parameters
     $resource = $this->getResource();
