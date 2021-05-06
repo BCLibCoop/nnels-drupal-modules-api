@@ -58,12 +58,39 @@ class TaxonomyResource extends ResourceEntity implements ResourceInterface {
    * @throws \EntityMetadataWrapperException
    */
   public static function getItemsWithTerm($data): array {
-    $query = new EntityFieldQuery();
     $out = array();
-    $results = $query->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', array('repository_item'))
-      ->fieldCondition($data['field'], 'tid', $data['id'], '=')
-      ->execute();
+
+    if ($data['field'] == 'field_dc_relation') {
+      //Need special joins to pull out what we need from field collection
+      $query = db_query(
+        'SELECT n.nid
+        FROM
+            {node} n
+        INNER JOIN {field_data_field_dc_relation} r ON
+            r.entity_id = n.nid
+        INNER JOIN field_data_field_dc_relation_qualifiers rqual ON
+	        rqual.entity_id = r.field_dc_relation_value
+        INNER JOIN {field_data_field_dc_relation_term_value} term ON
+            r.field_dc_relation_value = term.entity_id
+        WHERE
+            r.deleted = :notdeleted
+            AND n.type = :ctype
+            AND term.field_dc_relation_term_value_tid = :tid
+            AND rqual.field_dc_relation_qualifiers_value = :qualifier',
+        array(
+          ':notdeleted' => 0, ':ctype' => "repository_item", ':tid' =>
+          $data['id'], ':qualifier' => 'IsPartOf')
+      );
+      //Create an EFQ-like result object for use downstream.
+      $results['node'] = $query->fetchAllAssoc('nid');
+
+    } else { //normal taxonomy term condition
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', array('repository_item'));
+      $query->fieldCondition($data['field'], 'tid', $data['id'], '=');
+      $results =  $query->execute();
+    }
 
     foreach(array_keys($results['node']) as $instance => $nid) {
 
