@@ -129,6 +129,38 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
 
       // Add HATEOAS to the output.
       $this->addHateoas($output);
+
+      //Check for parameters that add in-resource paging
+      if ( $params = array_intersect_key( $request->getParsedInput(),
+        array('item_range' => '', 'item_page' => '') ) ) {
+          //defaults
+          $item_page = 1;
+          $item_range = 10;
+          //@todo fix this link from dropping other query params
+          $self_link = $output["data"]['links']['self'];
+
+          if ( isset( $params['item_range'] ) ) $item_range = $params['item_range'];
+          $chunked = array_chunk($output["data"]["attributes"]["items"],
+            $item_range);
+          if ( isset( $params['item_page'] ) ) $item_page = $params['item_page'];
+          $output["data"]["attributes"]["items"] = $chunked[$item_page - 1];
+          $output["data"]["attributes"]["items"][]['links']['self'] =
+            $self_link .
+            "?item_page={$item_page}&item_range={$item_range}";
+
+          //Multiple chunks and not last page
+          if (count($chunked) > 1 && count($chunked) != $item_page) {
+            $next = $item_page + 1;
+            $output["data"]["attributes"]["items"][]['links']['next'] =
+              $self_link . "?item_page={$item_page}&item_range={$item_range}";
+          } elseif (count($chunked) > 1) { //Multiples and last page
+            $previous = $item_page - 1;
+            $output["data"]["attributes"]["items"][]['links']['previous'] =
+              $self_link . "?item_page={$previous}&item_range={$item_range}";
+          } else {
+            //One chunk
+          }
+      }
     }
 
     return $output;
