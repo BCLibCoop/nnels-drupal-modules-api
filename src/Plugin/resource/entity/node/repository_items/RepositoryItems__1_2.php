@@ -77,7 +77,7 @@ class RepositoryItems__1_2 extends RepositoryItems__1_1 {
       }
       //@todo handle this in dataProvider for FileResources
       //IMPORTANT: Only Availability == Produced (1) files should be attached.
-      if ($entity->field_availability_status->value() == 1) {
+      if ($entity && $entity->field_availability_status->value() == 1) {
 
         $output[] = array(
           'type' => 'fileResources',
