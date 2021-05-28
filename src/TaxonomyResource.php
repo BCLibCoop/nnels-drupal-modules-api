@@ -5,6 +5,7 @@ namespace Drupal\nnels_api;
 
 use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
 use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_2;
+use Drupal\restful\Plugin\resource\Field\ResourceFieldEntity;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use EntityFieldQuery;
@@ -20,6 +21,35 @@ class TaxonomyResource extends ResourceEntity implements ResourceInterface {
    */
   protected function publicFields(): array {
     return parent::publicFields();
+  }
+
+  public function determineIndex(): bool {
+    $path = $this->getRequest()->getPath();
+    $slash_count = substr_count($path, '/');
+    if ($slash_count > 1) return FALSE;
+    else return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function processPublicFields(array $field_definitions) {
+    // The fields that only contain a property need to be set to be
+    // ResourceFieldEntity. Otherwise they will be considered regular
+    // ResourceField.
+
+    //Override to remove items field process callback from index requests.
+    if ($this->determineIndex())
+      unset($field_definitions['items']);
+
+    return array_map(function ($field_definition) {
+      $field_entity_class = '\Drupal\restful\Plugin\resource\Field\ResourceFieldEntity';
+      $class_name = ResourceFieldEntity::fieldClassName($field_definition);
+      if (!$class_name || is_subclass_of($class_name, $field_entity_class)) {
+        $class_name = $field_entity_class;
+      }
+      return $field_definition + array('class' => $class_name, 'entityType' => $this->getEntityType());
+    }, $field_definitions);
   }
 
   /**
@@ -49,9 +79,6 @@ class TaxonomyResource extends ResourceEntity implements ResourceInterface {
     }
   }
 
-  public static function getTerm() {
-
-  }
   /**
    * @param $data
    * @return array

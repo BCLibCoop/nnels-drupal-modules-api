@@ -68,7 +68,8 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
     // previous pages.
     $items_per_page = $this->calculateItemsPerPage($resource);
     $previous_items = ($page - 1) * $items_per_page;
-    if (isset($data['count']) && $data['count'] > count($data['data']) + $previous_items) {
+    if (isset($data['meta']['count']) &&
+      $data['meta']['count'] > count( $data['data']) + $previous_items ) {
       $query = $input;
       $query['page'] = $page + 1;
       $data['next'] = array(
@@ -130,40 +131,50 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
       // Add HATEOAS to the output.
       $this->addHateoas($output);
 
-      //Check for parameters that add in-resource paging
-      if ( $params = array_intersect_key( $request->getParsedInput(),
-        array('item_range' => '', 'item_page' => '') ) ) {
+      //Check for non-index requests which use item-level paging
+      if ( ! $resource->determineIndex() ) {
+
           //defaults
           $item_page = 1;
           $item_range = 10;
-          //@todo fix this link from dropping other query params
           $self_link = $output["data"]['links']['self'];
 
-          if ( isset( $params['item_range'] ) ) $item_range = $params['item_range'];
-          $chunked = array_chunk($output["data"]["attributes"]["items"],
-            $item_range);
-          if ( isset( $params['item_page'] ) ) $item_page = $params['item_page'];
-          $output["data"]["attributes"]["items"] = $chunked[$item_page - 1];
-          $output["data"]["attributes"]["items"][]['links']['self'] =
-            $self_link .
-            "?item_page={$item_page}&item_range={$item_range}";
+          $params = array_intersect_key( $request->getParsedInput(),
+            array('item_range' => '', 'item_page' => '') );
+
+          if ( isset( $params['item_range'] ) ) {
+            $item_range = $params['item_range'];
+          }
+
+          if (isset( $params['item_page'] ) ) {
+            $item_page = $params['item_page'];
+          }
+
+          $items = $output['data']['attributes']['items'];
+          $count = count($items);
+          $output['data']['attributes']['items'] = ''; //reset
+          $chunked_pages = array_chunk($items, $item_range);
+
+          //Set the chunked items
+          $output["data"]["attributes"]["items"] =
+            $chunked_pages[$item_page - 1];
+          $output["data"]["attributes"]["items"][]['meta']['count'] = $count;
 
           //Multiple chunks and not last page
-          if (count($chunked) > 1 && count($chunked) != $item_page) {
+          if ( count($chunked_pages) > 1 && count($chunked_pages) != $item_page ) {
             $next = $item_page + 1;
-            $output["data"]["attributes"]["items"][]['links']['next'] =
-              $self_link . "?item_page={$item_page}&item_range={$item_range}";
-          } elseif (count($chunked) > 1) { //Multiples and last page
+            $output["data"]["attributes"]['items'][]['links']['next'] =
+              $self_link . "?item_page={$next}&item_range={$item_range}";
+          //Multiples and last page
+          } elseif (count($chunked_pages) > 1) {
             $previous = $item_page - 1;
-            $output["data"]["attributes"]["items"][]['links']['previous'] =
+            $output["data"]["attributes"]['items'][]['links']['previous'] =
               $self_link . "?item_page={$previous}&item_range={$item_range}";
           } else {
             //One chunk
           }
       }
     }
-
-    return $output;
+    return array($output);
   }
-
 }
