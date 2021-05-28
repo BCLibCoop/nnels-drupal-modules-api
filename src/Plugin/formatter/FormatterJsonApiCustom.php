@@ -7,12 +7,8 @@
 
 namespace Drupal\nnels_api\Plugin\formatter;
 
-use Drupal\restful\Exception\BadRequestException;
 use Drupal\restful\Plugin\formatter\FormatterJsonApi;
-use Drupal\restful\Plugin\resource\DataInterpreter\DataInterpreterInterface;
-use Drupal\restful\Plugin\resource\Field\ResourceFieldBase;
-use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
-use Drupal\restful\Plugin\resource\Field\ResourceFieldResourceInterface;
+use Drupal\restful\Plugin\resource\ResourceInterface;
 
 /**
  * Class FormatterJsonApiCustom
@@ -39,16 +35,16 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
    *
    * @param array $data
    *   The data array after initial massaging.
-   * @param ResourceInterface $resource
+   * @param \Drupal\restful\Plugin\resource\ResourceInterface|null $resource
    *   The resource to use.
    * @param string $path
    *   The resource path.
    * @throws \Drupal\restful\Exception\ServerConfigurationException
    */
-  protected function addHateoas(array &$data, ResourceInterface $resource = NULL, $path = NULL) {
-   //parent::addHateoas($data, $resource, $path);
+  protected function addHateoas(array &$data, ResourceInterface $resource = NULL, $path = '') {
+    //parent::addHateoas($data, $resource, $path);
 
-   //modify paged links to use same keys as query parameters
+    //modify paged links to use same keys as query parameters
     $resource = $this->getResource();
     $request = $resource->getRequest();
     $input = $request->getParsedInput();
