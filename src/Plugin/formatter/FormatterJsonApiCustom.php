@@ -171,6 +171,6 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
           }
       }
     }
-    return array($output);
+    return $output;
   }
 }
