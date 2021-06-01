@@ -109,7 +109,6 @@ class BasicSearch__1_2 extends BasicSearch__1_1 {
   public function getGenres($tid) {
     $data = Genre__1_0::taxonomyNameData($tid);
     $data['path_only'] = FALSE;
-    $data['path_only'] = FALSE;
     return Genre__1_0
       ::getTermResourcePath($data);
   }

@@ -127,22 +127,25 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
       // Add HATEOAS to the output.
       $this->addHateoas($output);
 
-      //Check for non-index requests which use item-level paging
-      if ( ! $resource->determineIndex() ) {
+      //Check for term entity type
+      //& non-index requests which use item-level paging (single)
+      if ( $resource->getEntityType() == 'taxonomy_term' &&
+        method_exists($resource, 'determineIndex') ) {
+        if ( ! $resource->determineIndex() ) {
 
           //defaults
           $item_page = 1;
           $item_range = 10;
           $self_link = $output["data"]['links']['self'];
 
-          $params = array_intersect_key( $request->getParsedInput(),
-            array('item_range' => '', 'item_page' => '') );
+          $params = array_intersect_key($request->getParsedInput(),
+            array('item_range' => '', 'item_page' => ''));
 
-          if ( isset( $params['item_range'] ) ) {
+          if (isset($params['item_range'])) {
             $item_range = $params['item_range'];
           }
 
-          if (isset( $params['item_page'] ) ) {
+          if (isset($params['item_page'])) {
             $item_page = $params['item_page'];
           }
 
@@ -157,18 +160,21 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
           $output["data"]["attributes"]["items"][]['meta']['count'] = $count;
 
           //Multiple chunks and not last page
-          if ( count($chunked_pages) > 1 && count($chunked_pages) != $item_page ) {
+          if (count($chunked_pages) > 1 && count($chunked_pages) != $item_page) {
             $next = $item_page + 1;
             $output["data"]["attributes"]['items'][]['links']['next'] =
               $self_link . "?item_page={$next}&item_range={$item_range}";
-          //Multiples and last page
-          } elseif (count($chunked_pages) > 1) {
+            //Multiples and last page
+          }
+          elseif (count($chunked_pages) > 1) {
             $previous = $item_page - 1;
             $output["data"]["attributes"]['items'][]['links']['previous'] =
               $self_link . "?item_page={$previous}&item_range={$item_range}";
-          } else {
+          }
+          else {
             //One chunk
           }
+        }
       }
     }
     return $output;
