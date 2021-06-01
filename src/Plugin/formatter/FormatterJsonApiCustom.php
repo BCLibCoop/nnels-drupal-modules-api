@@ -48,7 +48,7 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
     $resource = $this->getResource();
     $request = $resource->getRequest();
     $input = $request->getParsedInput();
-    $page = $input['page'];
+    $page = $input['page'] ?: NULL;
 
     if ($page > 1) {
       $query = $input;
@@ -74,9 +74,9 @@ class FormatterJsonApiCustom extends FormatterJsonApi {
       );
     }
 
-    $self_link = $data["links"]["self"];
+    $self_link = $data["links"]["self"] ?: '';
     preg_match('/(page%5B(number|size)%5D)=(\d+)/', $self_link, $output);
-    if ($output[1]) {
+    if ( isset($output[1])) {
       $internal = ['page%5Bnumber%5D', 'page%5Bsize%5D'];
       $external = ['page', 'range'];
       $data["links"]["self"] = str_replace($internal, $external, $self_link);
