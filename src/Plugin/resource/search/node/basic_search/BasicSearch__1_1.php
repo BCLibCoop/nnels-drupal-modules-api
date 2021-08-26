@@ -8,6 +8,8 @@
 namespace Drupal\nnels_api\Plugin\resource\search\node\basic_search;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful_search_api\Plugin\Resource\ResourceSearchBase;
+use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
+use Drupal\nnels_api\LocatorUtility;
 
 /**
  * Class BasicSearch__1_1
@@ -38,26 +40,13 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
    * Overrides Resource::publicFields().
    */
   public function publicFields() {
+    $locator = new LocatorUtility();
+
     return array(
-//      'test' => array(
-//        'property' => 'nid',
-//        'process_callbacks' => array(
-//          array($this, 'buildLinks')
-//        ),
-//        'wrapper_method' => 'label'
-//      ),
-//      'uuid_link' => array(
-//        'property' => 'uuid',
-//        'process_callbacks' => array(
-//          array($this, 'buildLinks')
-//        ),
-//        'wrapper_method' => 'value',
-//        'wrapper_method_on_entity' => TRUE,
-//      ),
       'self' => array(
         'property' => 'nid',
         'process_callbacks' => array(
-          array($this, 'buildLinks')
+          array($locator, 'buildLinks')
         )
       ),
       'entity_id' => array(
@@ -76,7 +65,7 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
         'property' => 'field_dc_creator',
         //Remove format
       ),
-      'body' => array(
+      'abstract' => array(
         'property' => 'body',
         'sub_property' => LANGUAGE_NONE . '::0::value',
       ),
@@ -110,24 +99,26 @@ class BasicSearch__1_1 extends ResourceSearchBase implements ResourceInterface {
     );
   }
 
-  public static function buildLinks($nid) {
-    $uuid = entity_get_uuid_by_id('node', array($nid) );
-    $options = array('absolute' => TRUE);
-    $options['query'] = array('loadByFieldName' =>
-      'uuid');
-    $uuid_path = url("api/v1.0/repo_items/" . $uuid[$nid], $options);
+//  public static function buildLinks($nid) {
+//    //@todo move this to a generic helper class eventually
+//    $uuid = entity_get_uuid_by_id('node', array($nid) );
+//    $options = array('absolute' => TRUE);
+//    $options['query'] = array('loadByFieldName' =>
+//      'uuid');
+//    $version = getHighestResourceMinorVersion('repositoryItems');
+//    $uuid_path = url("api/v{$version}/repositoryItems/" . $uuid[$nid], $options);
+//
+//    unset($options['query']);
+//    $nid_path = url("api/v{$version}/repositoryItems/" . $nid, $options);
+//
+//    return array(
+//      'nid_link' => $nid_path,
+//      'uuid_link' => $uuid_path,
+//    );
+//  }
 
-    unset($options['query']);
-    $nid_path = url("api/v1.0/repo_items/" . $nid, $options);
-
-    return array(
-      'nid_link' => $nid_path,
-      'uuid_link' => $uuid_path,
-    );
-  }
-
-  public static function getItemPath($nid) {
-    return drupal_lookup_path('alias', "node/" . $nid);
+  public function getItemPath($nid) {
+    return LocatorUtility::getItemPath($nid);
   }
 
   public static function loadFileResource($entity_ids) {

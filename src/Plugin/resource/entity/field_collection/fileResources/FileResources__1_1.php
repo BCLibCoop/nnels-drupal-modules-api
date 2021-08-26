@@ -25,8 +25,8 @@ use Drupal\restful\Plugin\resource\ResourceInterface;
  *   resource = "fileResources",
  *   label = "File Resources",
  *   description = "Expose the file resources attached to repository items.",
- *   authenticationTypes = TRUE,
- *   authenticationOptional = TRUE,
+ *   authenticationTypes = { "token" },
+ *   authenticationOptional = FALSE,
  *   dataProvider = {
  *     "entityType": "field_collection_item",
  *     "bundles": {
@@ -55,7 +55,7 @@ class FileResources__1_1 extends ResourceEntity {
         array($this, 'formatRunTime')
       )
     );
-    $public_fields['format'] = array(
+    $public_fields['formats'] = array(
       'property' => 'field_file_format',
       'wrapper_method' => 'label',
     );
@@ -82,26 +82,37 @@ class FileResources__1_1 extends ResourceEntity {
   public function getS3Info($data_emw) {
     module_load_include('inc', 'cals_s3', 'cals_s3.NNELSStreamWrapper.class');
 
-    $stream = new \Drupal\cals_s3\NNELSStreamWrapper;
-    $stream->setUri($data_emw->getWrapper()->field_s3_path->value());
+    $stream = new \Drupal\amazons3\StreamWrapper;
+    $uri = reset(
+        $data_emw->getWrapper()->field_s3_file_upload->value()
+      )['uri'];
+    $stream->setUri($uri);
+    $filesize_bytes = $stream->url_stat($stream->getUri(), 1)['size'];
 
+    //Setter sets the value with a method
+    //Process callback operates on set value
     $map = array(
       "s3_path_signed" => array(
         'setter' => 'getExternalUrl',
       ),
       "filesize" => array(
-        'setter' => 'get_filesize',
-        'process' => 'format_size',
+        'preload' => $filesize_bytes,
+        'process' => 'getFilesize', //call formatSize in other method
       )
     );
 
     $output = array();
 
-    foreach ($map as $field_name => $funcs) {
-      $setter = $funcs['setter'];
-      $output[$field_name] = $stream->$setter();
-      if($funcs['process']) $output[$field_name] =
-        call_user_func($funcs['process'], $output[$field_name]);
+    foreach ($map as $mappable => $ops) {
+      $setter = $ops['setter'];
+      $check_callable = array($stream, $setter);
+      if (is_callable($check_callable)) $output[$mappable] = $stream->$setter();
+      else $output[$mappable] = $ops['preload'];
+      if($ops['process']) $output[$mappable] =
+        call_user_func(
+          array($this, $ops['process']),
+          $output[$mappable]
+        );
   }
 
     return $output;
@@ -109,5 +120,13 @@ class FileResources__1_1 extends ResourceEntity {
 
   public function formatRunTime($runtime) {
     return date('H:i:s', strtotime($runtime));
+  }
+
+  public function getFilesize($bytes) {
+    $decimals = 2;
+    $size = array('B','kB','MB','GB','TB','PB');
+    $factor = floor((strlen($bytes) - 1) / 3);
+    return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) .
+      $size[$factor];
   }
 }

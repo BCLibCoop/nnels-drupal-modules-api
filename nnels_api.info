@@ -4,6 +4,8 @@ core = 7.x
 
 dependencies[] = restful
 dependencies[] = restful_search_api
+dependencies[] = restful_token_auth
+dependencies[] = plug
 dependencies[] = cals_s3
 
 registry_autoload[] = PSR-4
