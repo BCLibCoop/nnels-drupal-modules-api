@@ -7,3 +7,6 @@ dependencies[] = restful_search_api
 dependencies[] = cals_s3
 
 registry_autoload[] = PSR-4
+
+registry_autoload_files[] = ../../all/modules/restful/src/RestfulManager.php
+registry_autoload_files[] = ../../all/modules/restful/src/Authentication/AuthenticationManager.php
