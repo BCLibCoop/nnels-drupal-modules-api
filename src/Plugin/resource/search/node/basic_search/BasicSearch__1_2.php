@@ -8,10 +8,10 @@
 namespace Drupal\nnels_api\Plugin\resource\search\node\basic_search;
 use Drupal\nnels_api\Plugin\resource\entity\taxonomy_term\Genre__1_0;
 use Drupal\nnels_api\Plugin\resource\entity\taxonomy_term\Subject__1_0;
+use Drupal\nnels_api\Plugin\resource\entity\node\repository_items\RepositoryItems__1_1;
 use Drupal\restful\Plugin\resource\ResourceInterface;
 use Drupal\restful_search_api\Plugin\Resource\ResourceSearchBase;
-use Drupal\nnels_api\Plugin\resource\search\node\basic_search
-\BasicSearch__1_1;
+use Drupal\nnels_api\Plugin\resource\search\node\basic_search\BasicSearch__1_1;
 
 /**
  * Class BasicSearch__1_2
@@ -33,7 +33,7 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  *   authenticationOptional = TRUE,
  *   majorVersion = 1,
  *   minorVersion = 2,
- *   formatter = "json"
+ *   formatter = "json_api_custom"
  * )
  */
 class BasicSearch__1_2 extends BasicSearch__1_1 {
@@ -73,21 +73,32 @@ class BasicSearch__1_2 extends BasicSearch__1_1 {
         'property' => 'field_genre',
         'sub_property' => LANGUAGE_NONE . '::0::tid',
         'process_callbacks' => array(
-          array(
-            $this, "getGenres"
-          ),
+          array($this, "getGenres"),
         ),
       );
+
     $public_fields['subjects'] =
       array(
         'property' => 'field_subject',
         'sub_property' => LANGUAGE_NONE . '::0::tid',
         'process_callbacks' => array(
-          array(
-            $this, "getSubjects"
-          ),
+          array($this, "getSubjects"),
         ),
       );
+
+    $public_fields['format_short'] = array(
+        'property' => 'field_file_resource',
+        'process_callbacks' => array(
+          array($this, 'loadFormat')
+        ),
+      );
+
+    $public_fields['cover_art'] = array(
+        'property' => 'nid',
+        'process_callbacks' => array(
+          array($this, 'getCoverArt')
+        ),
+    );
 
     $public_fields['path_alias'] = $public_fields['human_readable_path'];
     unset($public_fields['human_readable_path']);
@@ -96,12 +107,33 @@ class BasicSearch__1_2 extends BasicSearch__1_1 {
   }
 
   public function getGenres($tid) {
+    $data = Genre__1_0::taxonomyNameData($tid);
+    $data['path_only'] = FALSE;
     return Genre__1_0
-      ::getGenres($tid);
+      ::getTermResourcePath($data);
   }
 
   public function getSubjects($tid) {
+    $data = Subject__1_0::taxonomyNameData($tid);
+    $data['path_only'] = FALSE;
     return Subject__1_0
-      ::getSubjects($tid);
+      ::getTermResourcePath($data);
+  }
+
+  public function getEntityType() {
+    return 'node';
+  }
+
+  public function loadFormat($entities): array {
+    $output = [];
+    foreach($entities['und'] as $index => $entity_id) {
+      $wrapped = entity_metadata_wrapper('field_collection_item', $entity_id['value']);
+      $output[] = $wrapped->field_file_format->label();
+    }
+    return $output;
+  }
+
+  public function getCoverArt($nid) : array {
+    return RepositoryItems__1_1::getCoverArt($nid);
   }
 }

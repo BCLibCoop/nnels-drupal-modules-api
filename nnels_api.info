@@ -4,6 +4,12 @@ core = 7.x
 
 dependencies[] = restful
 dependencies[] = restful_search_api
+dependencies[] = restful_token_auth
+dependencies[] = plug
 dependencies[] = cals_s3
+dependencies[] = xautoload
 
 registry_autoload[] = PSR-4
+
+registry_autoload_files[] = ../../all/modules/restful/src/RestfulManager.php
+registry_autoload_files[] = ../../all/modules/restful/src/Authentication/AuthenticationManager.php

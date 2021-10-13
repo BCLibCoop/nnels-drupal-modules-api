@@ -36,7 +36,7 @@ function nnels_api_authentication_plugin_alter(&$plugins) {
           array (
             'paramName' => 'access_token',
           ),
-        'class' => 'Drupal\\restful_token_auth\\Plugin\\authentication\\TokenAuthentication',
+        'class' => 'Drupal\restful_token_auth\Plugin\authentication\TokenAuthentication',
         'provider' => 'restful_token_auth',
       ),
     'basic_auth' =>
@@ -47,10 +47,96 @@ function nnels_api_authentication_plugin_alter(&$plugins) {
           array (
           ),
         'id' => 'basic_auth',
-        'class' => 'Drupal\\restful\\Plugin\\authentication\\BasicAuthentication',
+        'class' => 'Drupal\restful\Plugin\authentication\BasicAuthentication',
         'provider' => 'restful',
       )
       );
 
       $plugins = $plugins + $lost_defs;
+}
+
+/**
+ * Implements hook_node_access
+ * @param $node
+ * @param $op
+ * @param $account
+ */
+function nnels_api_hook_node_access($node, $op, $account) {
+  //drupal_static_reset('node_access'); to clear cache
+  //@todo MUST REMOVE - only for testing!!
+  $t = 0;
+  $user_obj = user_load($account->uid);
+  return NODE_ACCESS_IGNORE;
+}
+
+/**
+ * @param $resource_name
+ * @return mixed
+ */
+function getHighestResourceMinorVersion($resource_name): float {
+  $plugins = restful()->getResourceManager()->getPlugins();
+  $register = [];
+  foreach ($plugins->getInstanceIds() as $instance => $id) {
+    $id_string = explode(':', $id);
+    if (strtolower($id_string[0]) == strtolower($resource_name)) {
+      $register[] = (float) $id_string[1]; //1.0, 1.1, 1.2
+    }
+  } //end foreach
+  return max($register) ?: 1.0; //return version or default guarantee
+}
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function flag_entity_property_info(): array {
+  return array(
+    'flagging' => array(
+      'properties' => array(
+        'entity_type' => array(
+          'label' => t("Entity type"),
+          'type' => 'text',
+          'description' => t("The entity type."),
+          'getter callback' => 'entity_property_verbatim_get',
+          'setter callback' => 'entity_property_verbatim_set',
+          'schema field' => 'entity_type',
+          'required' => TRUE,
+        ),
+        'entity_id' => array(
+          'label' => t("Entity ID"),
+          'type' => 'integer',
+          'description' => t("The entity ID."),
+          'getter callback' => 'entity_property_verbatim_get',
+          'setter callback' => 'entity_property_verbatim_set',
+          'schema field' => 'entity_id',
+          'required' => TRUE,
+        ),
+        'uid' => array(
+          'label' => t("User"),
+          'type' => 'user',
+          'description' => t("The user."),
+          'getter callback' => 'entity_property_verbatim_get',
+          'setter callback' => 'entity_property_verbatim_set',
+          'schema field' => 'uid',
+          'required' => TRUE,
+        ),
+        'flagging_id' => array(
+          'label' => t("Flagging ID"),
+          'type' => 'integer',
+          'description' => t("The unique ID for this tag."),
+          'getter callback' => 'entity_property_verbatim_get',
+          'setter callback' => 'entity_property_verbatim_set',
+          'schema field' => 'flagging_id',
+          'required' => TRUE,
+        ),
+//        'name' => array(
+//          'label' => t("Flag"),
+//          'type' => 'text',
+//          'schema field' => 'flag_name',
+//          'description' => t("The flag name."),
+//          'getter callback' => 'entity_property_verbatim_get',
+//          'setter callback' => 'entity_property_verbatim_set',
+//        ),
+      ),
+    ),
+  );
 }

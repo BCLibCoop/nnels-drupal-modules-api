@@ -11,6 +11,7 @@ use Drupal\restful\Plugin\resource\Field\ResourceFieldInterface;
 use Drupal\restful\Plugin\resource\Resource;
 use Drupal\restful\Plugin\resource\ResourceEntity;
 use Drupal\restful\Plugin\resource\ResourceInterface;
+use Drupal\nnels_api\LocatorUtility;
 use Drupal\nnels_api\Plugin\resource\search\node\basic_search
 \BasicSearch__1_1;
 
@@ -21,8 +22,8 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  * @Resource(
  *   name = "bookshelf:1.0",
  *   resource = "bookshelf",
- *   label = "Bookshelf",
- *   description = "Show the user's Bookshelf",
+ *   label = "Bookshelf Items",
+ *   description = "A user's listing of items to save for later.",
  *   authenticationTypes = { "token" },
  *   authenticationOptional = FALSE,
  *   dataProvider = {
@@ -31,34 +32,24 @@ use Drupal\nnels_api\Plugin\resource\search\node\basic_search
  *       "bookshelf"
  *     },
  *     "idField": "id",
- *     "idColumn": "flagging_id",
  *   },
- *   formatter = "json_api",
+ *   formatter = "json_api_custom",
  *   majorVersion = 1,
  *   minorVersion = 0,
  * )
  */
-class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
 
-  /**
-   * Overrides ResourceEntity::checkEntityAccess().
-   *
-   * Allow access to create "Bookshelf" resource for privileged users.
-   */
-  protected function checkEntityAccess($op, $entity_type, $entity) {
-    $account = $this->getAccount();
-    return user_access('flag bookshelf', $account);
-  }
+class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
 
   protected function publicFields() {
     $public_fields = parent::publicFields();
     unset($public_fields['self']);
     unset($public_fields['label']);
 
-    $public_fields['id']['methods'] = array('GET', 'POST');
+    $public_fields['id']['methods'] = array('GET', 'POST', 'PATCH', 'OPTIONS');
 
     $public_fields['id'] = array(
-      'property' => 'entity_id',
+      'property' => 'flagging_id',
     );
 
     $public_fields['repositoryItem'] = array(
@@ -95,19 +86,16 @@ class Bookshelf__1_0 extends ResourceEntity implements ResourceInterface {
         ->field_file_format->label();
     }
     return array(
-//      'id' => $entity_id,
       'title' => $wrapped->title_field->value(),
       'author' => $wrapped->field_dc_creator->value(),
       'formats' => $formats,
-      'self' => \Drupal\nnels_api\Plugin\resource\search\node\basic_search
-      \BasicSearch__1_1::buildLinks($entity_id),
+      'self' => LocatorUtility::buildLinks($entity_id),
     );
   }
 
-  /**
   public function filterByUserFlagged($i) {
     $flags = flag_get_user_flags('node', NULL, $this->getAccount()->uid);
     if (! empty($flag['bookshelf']) ) return $flags['bookshelf'];
     else return array( 'message' => 'Your bookshelf is currently empty.');
-  }**/
+  }
 }
